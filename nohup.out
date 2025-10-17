@@ -1,0 +1,28 @@
+[0;34mStarting Natural Language SQL Interface...[0m
+[0;32mStarting backend server...[0m
+Waiting for backend to start...
+[0;32mStarting frontend server...[0m
+
+> client@0.0.0 dev
+> vite
+
+Port 5173 is in use, trying another one...
+
+  [32m[1mVITE[22m v6.3.5[39m  [2mready in [0m[1m698[22m[2m[0m ms[22m
+
+  [32m➜[39m  [1mLocal[22m:   [36mhttp://localhost:[1m5174[22m/[39m
+[2m  [32m➜[39m  [1mNetwork[22m[2m: use [22m[1m--host[22m[2m to expose[22m
+[0;32m✓ Services started successfully![0m
+[0;34mFrontend: http://localhost:5173[0m
+[0;34mBackend:  http://localhost:8000[0m
+[0;34mAPI Docs: http://localhost:8000/docs[0m
+
+Press Ctrl+C to stop all services...
+INFO:     Will watch for changes in these directories: ['C:\\Users\\igor.schmertzler\\Documents\\tac-5\\app\\server']
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+INFO:     Started reloader process [11580] using StatReload
+INFO:     Started server process [15208]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  StatReload detected changes in 'core\sql_processor.py'. Reloading...
+ 

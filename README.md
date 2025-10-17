@@ -131,7 +131,6 @@ bun run preview            # Preview production build
 - `POST /api/upload` - Upload CSV/JSON file
 - `POST /api/query` - Process natural language query
 - `GET /api/schema` - Get database schema
-- `POST /api/insights` - Generate column insights
 - `GET /api/health` - Health check
 
 ## Security

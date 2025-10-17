@@ -49,27 +49,6 @@ class DatabaseSchemaResponse(BaseModel):
     total_tables: int
     error: Optional[str] = None
 
-# Insights Models
-class InsightsRequest(BaseModel):
-    table_name: str
-    column_names: Optional[List[str]] = None  # If None, analyze all columns
-
-class ColumnInsight(BaseModel):
-    column_name: str
-    data_type: str
-    unique_values: int
-    null_count: int
-    min_value: Optional[Any] = None
-    max_value: Optional[Any] = None
-    avg_value: Optional[float] = None
-    most_common: Optional[List[Dict[str, Any]]] = None
-
-class InsightsResponse(BaseModel):
-    table_name: str
-    insights: List[ColumnInsight]
-    generated_at: datetime
-    error: Optional[str] = None
-
 # Health Check Models
 class HealthCheckRequest(BaseModel):
     pass

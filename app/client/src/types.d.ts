@@ -46,30 +46,6 @@ interface DatabaseSchemaResponse {
   error?: string;
 }
 
-// Insights Types
-interface InsightsRequest {
-  table_name: string;
-  column_names?: string[];
-}
-
-interface ColumnInsight {
-  column_name: string;
-  data_type: string;
-  unique_values: number;
-  null_count: number;
-  min_value?: any;
-  max_value?: any;
-  avg_value?: number;
-  most_common?: Record<string, any>[];
-}
-
-interface InsightsResponse {
-  table_name: string;
-  insights: ColumnInsight[];
-  generated_at: string;
-  error?: string;
-}
-
 // Health Check Types
 interface HealthCheckResponse {
   status: "ok" | "error";

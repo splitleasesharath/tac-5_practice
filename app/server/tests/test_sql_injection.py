@@ -19,7 +19,6 @@ from core.sql_security import (
 )
 from core.sql_processor import execute_sql_safely
 from core.file_processor import sanitize_table_name
-from core.insights import generate_insights
 
 
 @pytest.fixture
@@ -252,29 +251,6 @@ class TestFileProcessorSecurity:
             sanitized = sanitize_table_name(malicious_name)
             # This should not raise an error
             validate_identifier(sanitized, "table")
-
-
-class TestInsightsSecurity:
-    """Test insights module with security enhancements"""
-    
-    @patch('core.insights.sqlite3.connect')
-    def test_generate_insights_validates_table_name(self, mock_connect):
-        """Test that table names are validated"""
-        with pytest.raises(Exception) as exc_info:
-            generate_insights("users'; DROP TABLE users; --")
-        assert "Invalid" in str(exc_info.value)
-    
-    @patch('core.insights.sqlite3.connect')
-    def test_generate_insights_validates_column_names(self, mock_connect):
-        """Test that column names are validated"""
-        mock_conn = MagicMock()
-        mock_cursor = MagicMock()
-        mock_connect.return_value = mock_conn
-        mock_conn.cursor.return_value = mock_cursor
-        
-        with pytest.raises(Exception) as exc_info:
-            generate_insights("users", ["name", "'; DROP TABLE users; --"])
-        assert "Invalid column name" in str(exc_info.value)
 
 
 class TestEndToEndSQLInjection:
