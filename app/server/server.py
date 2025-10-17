@@ -8,30 +8,27 @@ from dotenv import load_dotenv
 import logging
 import sys
 
-from core.data_models import (
+# Load .env file from server directory
+load_dotenv()
+
+from core.data_models import (  # noqa: E402
     FileUploadResponse,
     QueryRequest,
     QueryResponse,
     DatabaseSchemaResponse,
-    InsightsRequest,
-    InsightsResponse,
     HealthCheckResponse,
     TableSchema,
     ColumnInfo
 )
-from core.file_processor import convert_csv_to_sqlite, convert_json_to_sqlite, convert_jsonl_to_sqlite
-from core.llm_processor import generate_sql
-from core.sql_processor import execute_sql_safely, get_database_schema
-from core.insights import generate_insights
-from core.sql_security import (
+from core.file_processor import convert_csv_to_sqlite, convert_json_to_sqlite, convert_jsonl_to_sqlite  # noqa: E402
+from core.llm_processor import generate_sql  # noqa: E402
+from core.sql_processor import execute_sql_safely, get_database_schema  # noqa: E402
+from core.sql_security import (  # noqa: E402
     execute_query_safely,
     validate_identifier,
     check_table_exists,
     SQLSecurityError
 )
-
-# Load .env file from server directory
-load_dotenv()
 
 # Configure logging
 logging.basicConfig(
@@ -182,28 +179,6 @@ async def get_database_schema_endpoint() -> DatabaseSchemaResponse:
         return DatabaseSchemaResponse(
             tables=[],
             total_tables=0,
-            error=str(e)
-        )
-
-@app.post("/api/insights", response_model=InsightsResponse)
-async def generate_insights_endpoint(request: InsightsRequest) -> InsightsResponse:
-    """Generate statistical insights for table columns"""
-    try:
-        insights = generate_insights(request.table_name, request.column_names)
-        response = InsightsResponse(
-            table_name=request.table_name,
-            insights=insights,
-            generated_at=datetime.now()
-        )
-        logger.info(f"[SUCCESS] Insights generated for table: {request.table_name}, insights count: {len(insights)}")
-        return response
-    except Exception as e:
-        logger.error(f"[ERROR] Insights generation failed: {str(e)}")
-        logger.error(f"[ERROR] Full traceback:\n{traceback.format_exc()}")
-        return InsightsResponse(
-            table_name=request.table_name,
-            insights=[],
-            generated_at=datetime.now(),
             error=str(e)
         )
 

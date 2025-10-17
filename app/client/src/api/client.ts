@@ -60,18 +60,7 @@ export const api = {
   async getSchema(): Promise<DatabaseSchemaResponse> {
     return apiRequest<DatabaseSchemaResponse>('/schema');
   },
-  
-  // Generate insights
-  async generateInsights(request: InsightsRequest): Promise<InsightsResponse> {
-    return apiRequest<InsightsResponse>('/insights', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(request)
-    });
-  },
-  
+
   // Health check
   async healthCheck(): Promise<HealthCheckResponse> {
     return apiRequest<HealthCheckResponse>('/health');
