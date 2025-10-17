@@ -18,7 +18,9 @@ from core.data_models import (  # noqa: E402
     DatabaseSchemaResponse,
     HealthCheckResponse,
     TableSchema,
-    ColumnInfo
+    ColumnInfo,
+    GenerateQueryRequest,
+    GenerateQueryResponse
 )
 from core.file_processor import convert_csv_to_sqlite, convert_json_to_sqlite, convert_jsonl_to_sqlite  # noqa: E402
 from core.llm_processor import generate_sql  # noqa: E402
@@ -211,6 +213,40 @@ async def health_check() -> HealthCheckResponse:
             database_connected=False,
             tables_count=0,
             uptime_seconds=0
+        )
+
+@app.post("/api/generate-query", response_model=GenerateQueryResponse)
+async def generate_query_endpoint() -> GenerateQueryResponse:
+    """Generate a random natural language query based on database schema"""
+    try:
+        # Get database schema
+        schema_info = get_database_schema()
+
+        # Check if there are any tables in the database
+        if not schema_info.get('tables') or len(schema_info['tables']) == 0:
+            return GenerateQueryResponse(
+                query="",
+                context="No tables found in database",
+                error="Please upload data before generating queries"
+            )
+
+        # Generate random query using LLM
+        query = generate_random_query(schema_info)
+
+        response = GenerateQueryResponse(
+            query=query,
+            context=f"Generated from {len(schema_info['tables'])} table(s)"
+        )
+        logger.info(f"[SUCCESS] Random query generated: {query}")
+        return response
+
+    except Exception as e:
+        logger.error(f"[ERROR] Query generation failed: {str(e)}")
+        logger.error(f"[ERROR] Full traceback:\n{traceback.format_exc()}")
+        return GenerateQueryResponse(
+            query="",
+            context=None,
+            error=str(e)
         )
 
 @app.delete("/api/table/{table_name}")

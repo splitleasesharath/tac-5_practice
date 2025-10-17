@@ -54,3 +54,14 @@ interface HealthCheckResponse {
   version: string;
   uptime_seconds: number;
 }
+
+// Generate Query Types
+interface GenerateQueryRequest {
+  // Empty interface - no parameters needed
+}
+
+interface GenerateQueryResponse {
+  query: string;
+  context?: string;
+  error?: string;
+}

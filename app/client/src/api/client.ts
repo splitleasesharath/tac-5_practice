@@ -64,5 +64,16 @@ export const api = {
   // Health check
   async healthCheck(): Promise<HealthCheckResponse> {
     return apiRequest<HealthCheckResponse>('/health');
+  },
+
+  // Generate random query
+  async generateRandomQuery(): Promise<GenerateQueryResponse> {
+    return apiRequest<GenerateQueryResponse>('/generate-query', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({})
+    });
   }
 };
