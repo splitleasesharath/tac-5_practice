@@ -117,9 +117,21 @@ def get_claude_env() -> Dict[str, str]:
         # Basic environment variables Claude Code might need
         "HOME": os.getenv("HOME"),
         "USER": os.getenv("USER"),
+        "USERNAME": os.getenv("USERNAME"),  # Windows uses USERNAME instead of USER
         "PATH": os.getenv("PATH"),
         "SHELL": os.getenv("SHELL"),
         "TERM": os.getenv("TERM"),
+        # Windows-specific environment variables
+        "USERPROFILE": os.getenv("USERPROFILE"),
+        "HOMEDRIVE": os.getenv("HOMEDRIVE"),
+        "HOMEPATH": os.getenv("HOMEPATH"),
+        "APPDATA": os.getenv("APPDATA"),
+        "LOCALAPPDATA": os.getenv("LOCALAPPDATA"),
+        "TEMP": os.getenv("TEMP"),
+        "TMP": os.getenv("TMP"),
+        "SystemRoot": os.getenv("SystemRoot"),
+        "COMSPEC": os.getenv("COMSPEC"),
+        "PATHEXT": os.getenv("PATHEXT"),
     }
 
     # Only add GitHub tokens if GITHUB_PAT exists
@@ -183,8 +195,12 @@ def prompt_claude_code(request: AgentPromptRequest) -> AgentPromptResponse:
     if request.dangerously_skip_permissions:
         cmd.append("--dangerously-skip-permissions")
 
-    # Set up environment with only required variables
-    env = get_claude_env()
+    # On Windows, inherit all environment variables to avoid Node.js cryptography issues
+    # On other platforms, use filtered environment
+    if sys.platform == "win32":
+        env = None  # Inherit all environment variables
+    else:
+        env = get_claude_env()
 
     try:
         # Execute Claude Code and pipe output to file
