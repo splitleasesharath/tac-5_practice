@@ -6,6 +6,7 @@ import { api } from './api/client'
 // Initialize app
 document.addEventListener('DOMContentLoaded', () => {
   initializeQueryInput();
+  initializeGenerateQuery();
   initializeFileUpload();
   initializeModal();
   loadDatabaseSchema();
@@ -45,6 +46,37 @@ function initializeQueryInput() {
   queryInput.addEventListener('keydown', (e) => {
     if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
       queryButton.click();
+    }
+  });
+}
+
+// Generate Random Query Functionality
+function initializeGenerateQuery() {
+  const generateQueryButton = document.getElementById('generate-query-button') as HTMLButtonElement;
+  const queryInput = document.getElementById('query-input') as HTMLTextAreaElement;
+
+  generateQueryButton.addEventListener('click', async () => {
+    // Disable button and show loading state
+    generateQueryButton.disabled = true;
+    const originalText = generateQueryButton.textContent;
+    generateQueryButton.innerHTML = '<span class="loading"></span> Generating...';
+
+    try {
+      const response = await api.generateRandomQuery();
+
+      if (response.error) {
+        displayError(response.error);
+      } else {
+        // Overwrite the query input field with the generated query
+        queryInput.value = response.query;
+        queryInput.focus();
+      }
+    } catch (error) {
+      displayError(error instanceof Error ? error.message : 'Failed to generate query');
+    } finally {
+      // Re-enable button
+      generateQueryButton.disabled = false;
+      generateQueryButton.textContent = originalText || 'Generate Random Query';
     }
   });
 }
