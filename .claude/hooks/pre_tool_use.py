@@ -116,7 +116,7 @@ def main():
         
         # Read existing log data or initialize empty list
         if log_path.exists():
-            with open(log_path, 'r') as f:
+            with open(log_path, 'r', encoding='utf-8') as f:
                 try:
                     log_data = json.load(f)
                 except (json.JSONDecodeError, ValueError):
@@ -128,7 +128,7 @@ def main():
         log_data.append(input_data)
         
         # Write back to file with formatting
-        with open(log_path, 'w') as f:
+        with open(log_path, 'w', encoding='utf-8') as f:
             json.dump(log_data, f, indent=2)
         
         sys.exit(0)

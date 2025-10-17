@@ -45,7 +45,7 @@ def main():
 
         # Read existing log data or initialize empty list
         if log_path.exists():
-            with open(log_path, 'r') as f:
+            with open(log_path, 'r', encoding='utf-8') as f:
                 try:
                     log_data = json.load(f)
                 except (json.JSONDecodeError, ValueError):
@@ -57,7 +57,7 @@ def main():
         log_data.append(input_data)
         
         # Write back to file with formatting
-        with open(log_path, 'w') as f:
+        with open(log_path, 'w', encoding='utf-8') as f:
             json.dump(log_data, f, indent=2)
         
         # Handle --chat switch (same as stop.py)
@@ -67,7 +67,7 @@ def main():
                 # Read .jsonl file and convert to JSON array
                 chat_data = []
                 try:
-                    with open(transcript_path, 'r') as f:
+                    with open(transcript_path, 'r', encoding='utf-8') as f:
                         for line in f:
                             line = line.strip()
                             if line:
@@ -78,7 +78,7 @@ def main():
                     
                     # Write to session-specific chat.json
                     chat_file = log_dir / 'chat.json'
-                    with open(chat_file, 'w') as f:
+                    with open(chat_file, 'w', encoding='utf-8') as f:
                         json.dump(chat_data, f, indent=2)
                 except Exception:
                     pass  # Fail silently

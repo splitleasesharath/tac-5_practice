@@ -44,7 +44,7 @@ def main():
         
         # Read existing log data or initialize empty list
         if log_file.exists():
-            with open(log_file, 'r') as f:
+            with open(log_file, 'r', encoding='utf-8') as f:
                 try:
                     log_data = json.load(f)
                 except (json.JSONDecodeError, ValueError):
@@ -56,7 +56,7 @@ def main():
         log_data.append(input_data)
         
         # Write back to file with formatting
-        with open(log_file, 'w') as f:
+        with open(log_file, 'w', encoding='utf-8') as f:
             json.dump(log_data, f, indent=2)
         
         
