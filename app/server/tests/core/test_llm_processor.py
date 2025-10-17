@@ -2,10 +2,13 @@ import pytest
 import os
 from unittest.mock import patch, MagicMock
 from core.llm_processor import (
-    generate_sql_with_openai, 
-    generate_sql_with_anthropic, 
+    generate_sql_with_openai,
+    generate_sql_with_anthropic,
     format_schema_for_prompt,
-    generate_sql
+    generate_sql,
+    generate_random_query,
+    generate_random_query_with_openai,
+    generate_random_query_with_anthropic
 )
 from core.data_models import QueryRequest
 
@@ -276,12 +279,125 @@ class TestLLMProcessor:
     def test_generate_sql_only_openai_key(self, mock_openai_func):
         # Test when only OpenAI key exists
         mock_openai_func.return_value = "SELECT * FROM sales"
-        
+
         with patch.dict(os.environ, {'OPENAI_API_KEY': 'openai-key'}, clear=True):
             request = QueryRequest(query="Show sales data", llm_provider="anthropic")
             schema_info = {'tables': {}}
-            
+
             result = generate_sql(request, schema_info)
-            
+
             assert result == "SELECT * FROM sales"
             mock_openai_func.assert_called_once_with("Show sales data", schema_info)
+
+    @patch('core.llm_processor.OpenAI')
+    def test_generate_random_query_with_openai(self, mock_openai_class):
+        # Mock OpenAI client and response
+        mock_client = MagicMock()
+        mock_openai_class.return_value = mock_client
+
+        mock_response = MagicMock()
+        mock_response.choices[0].message.content = "Show me all users who are older than 30."
+        mock_client.chat.completions.create.return_value = mock_response
+
+        # Mock environment variable
+        with patch.dict(os.environ, {'OPENAI_API_KEY': 'test-key'}):
+            schema_info = {
+                'tables': {
+                    'users': {
+                        'columns': {'id': 'INTEGER', 'name': 'TEXT', 'age': 'INTEGER'},
+                        'row_count': 100
+                    }
+                }
+            }
+
+            result = generate_random_query_with_openai(schema_info)
+
+            assert result == "Show me all users who are older than 30."
+            mock_client.chat.completions.create.assert_called_once()
+
+            # Verify the API call parameters
+            call_args = mock_client.chat.completions.create.call_args
+            assert call_args[1]['model'] == 'gpt-4.1-mini'
+            assert call_args[1]['temperature'] == 0.9  # Higher temperature for variety
+            assert call_args[1]['max_tokens'] == 100
+
+    @patch('core.llm_processor.Anthropic')
+    def test_generate_random_query_with_anthropic(self, mock_anthropic_class):
+        # Mock Anthropic client and response
+        mock_client = MagicMock()
+        mock_anthropic_class.return_value = mock_client
+
+        mock_response = MagicMock()
+        mock_response.content[0].text = "What is the average price of products?"
+        mock_client.messages.create.return_value = mock_response
+
+        # Mock environment variable
+        with patch.dict(os.environ, {'ANTHROPIC_API_KEY': 'test-key'}):
+            schema_info = {
+                'tables': {
+                    'products': {
+                        'columns': {'id': 'INTEGER', 'name': 'TEXT', 'price': 'REAL'},
+                        'row_count': 50
+                    }
+                }
+            }
+
+            result = generate_random_query_with_anthropic(schema_info)
+
+            assert result == "What is the average price of products?"
+            mock_client.messages.create.assert_called_once()
+
+            # Verify the API call parameters
+            call_args = mock_client.messages.create.call_args
+            assert call_args[1]['model'] == 'claude-3-haiku-20240307'
+            assert call_args[1]['temperature'] == 0.9  # Higher temperature for variety
+            assert call_args[1]['max_tokens'] == 100
+
+    def test_generate_random_query_empty_schema(self):
+        # Test error handling when no tables in schema
+        schema_info = {'tables': {}}
+
+        with pytest.raises(ValueError) as exc_info:
+            generate_random_query(schema_info)
+
+        assert "No tables found in database schema" in str(exc_info.value)
+
+    @patch('core.llm_processor.generate_random_query_with_openai')
+    def test_generate_random_query_openai_priority(self, mock_openai_func):
+        # Test that OpenAI is used when OpenAI key exists
+        mock_openai_func.return_value = "What are the top 10 users by age?"
+
+        with patch.dict(os.environ, {'OPENAI_API_KEY': 'openai-key', 'ANTHROPIC_API_KEY': 'anthropic-key'}):
+            schema_info = {
+                'tables': {
+                    'users': {
+                        'columns': {'id': 'INTEGER', 'name': 'TEXT', 'age': 'INTEGER'},
+                        'row_count': 100
+                    }
+                }
+            }
+
+            result = generate_random_query(schema_info, provider="anthropic")
+
+            assert result == "What are the top 10 users by age?"
+            mock_openai_func.assert_called_once_with(schema_info)
+
+    @patch('core.llm_processor.generate_random_query_with_anthropic')
+    def test_generate_random_query_anthropic_fallback(self, mock_anthropic_func):
+        # Test that Anthropic is used when only Anthropic key exists
+        mock_anthropic_func.return_value = "Show me products with prices above average."
+
+        with patch.dict(os.environ, {'ANTHROPIC_API_KEY': 'anthropic-key'}, clear=True):
+            schema_info = {
+                'tables': {
+                    'products': {
+                        'columns': {'id': 'INTEGER', 'name': 'TEXT', 'price': 'REAL'},
+                        'row_count': 50
+                    }
+                }
+            }
+
+            result = generate_random_query(schema_info, provider="openai")
+
+            assert result == "Show me products with prices above average."
+            mock_anthropic_func.assert_called_once_with(schema_info)
